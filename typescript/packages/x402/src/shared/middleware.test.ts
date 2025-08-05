@@ -256,6 +256,19 @@ describe("getDefaultAsset", () => {
     });
   });
 
+  it("should return Scroll Bridged USDC asset details", () => {
+    const result = getDefaultAsset("scroll");
+
+    expect(result).toEqual({
+      address: "0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4",
+      decimals: 6,
+      eip712: {
+        name: "Bridged USDC",
+        version: "2",
+      },
+    });
+  });
+
   it("should handle unknown networks", () => {
     expect(() => getDefaultAsset("unknown" as Network)).toThrow("Unsupported network: unknown");
   });
@@ -286,6 +299,21 @@ describe("processPriceToAtomicAmount", () => {
         decimals: 6,
         eip712: {
           name: "USDC",
+          version: "2",
+        },
+      },
+    });
+  });
+
+  it("should handle number price in dollars", () => {
+    const result = processPriceToAtomicAmount(0.01, "scroll");
+    expect(result).toEqual({
+      maxAmountRequired: "10000",
+      asset: {
+        address: "0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4",
+        decimals: 6,
+        eip712: {
+          name: "Bridged USDC",
           version: "2",
         },
       },

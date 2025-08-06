@@ -22,42 +22,36 @@ const app = new Hono();
 
 // Enable CORS for frontend
 app.use("/*", cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"],
+  origin: ["http://localhost:5173", "http://localhost:3000", "http://localhost:5174"],
   credentials: true,
 }));
 
-// Simple in-memory storage for sessions (use Redis/DB in production)
+// Product catalog interface
+interface Product {
+  id: string;
+  name: string;
+  price: string;
+  description: string;
+  type: "session" | "onetime";
+  duration?: number; // in minutes, for session type
+}
+
+interface ProductCatalog {
+  products: Product[];
+}
+
+// Simple in-memory storage for sessions and product catalog
 interface Session {
   id: string;
+  productId: string;
   createdAt: Date;
   expiresAt: Date;
-  type: "24hour" | "onetime";
+  type: "session" | "onetime";
   used?: boolean;
 }
 
 const sessions = new Map<string, Session>();
-
-// Configure x402 payment middleware with two payment options
-app.use(
-  paymentMiddleware(
-    payTo,
-    {
-      // 24-hour session access
-      "/api/pay/session": {
-        price: "$1.00",
-        network,
-      },
-      // One-time access/payment
-      "/api/pay/onetime": {
-        price: "$0.10",
-        network,
-      },
-    },
-    {
-      url: facilitatorUrl,
-    },
-  ),
-);
+let currentProductCatalog: ProductCatalog = { products: [] };
 
 // Free endpoint - health check
 app.get("/api/health", (c) => {
@@ -72,80 +66,43 @@ app.get("/api/health", (c) => {
   });
 });
 
-// Free endpoint - get payment options
-app.get("/api/payment-options", (c) => {
-  return c.json({
-    options: [
-      {
-        name: "24-Hour Access",
-        endpoint: "/api/pay/session",
-        price: "$1.00",
-        description: "Get a session ID for 24 hours of unlimited access",
-      },
-      {
-        name: "One-Time Access",
-        endpoint: "/api/pay/onetime",
-        price: "$0.10",
-        description: "Single use payment for immediate access",
-      },
-    ],
-  });
+// Free endpoint - set product catalog
+app.post("/api/product-catalog", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { products } = body as ProductCatalog;
+    
+    if (!Array.isArray(products)) {
+      return c.json({ error: "Invalid product catalog format" }, 400);
+    }
+
+    // Validate products
+    for (const product of products) {
+      if (!product.id || !product.name || !product.price || !product.type) {
+        return c.json({ error: "Invalid product format" }, 400);
+      }
+      
+      if (product.type === "session" && !product.duration) {
+        return c.json({ error: "Session products must have duration" }, 400);
+      }
+    }
+
+    currentProductCatalog = { products };
+    
+    return c.json({
+      success: true,
+      message: "Product catalog updated",
+      catalog: currentProductCatalog,
+    });
+  } catch (error) {
+    return c.json({ error: "Invalid JSON" }, 400);
+  }
 });
 
-// Paid endpoint - 24-hour session access ($1.00)
-app.post("/api/pay/session", (c) => {
-  const sessionId = uuidv4();
-  const now = new Date();
-  const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000); // 24 hours
-  
-  const session: Session = {
-    id: sessionId,
-    createdAt: now,
-    expiresAt,
-    type: "24hour",
-  };
-
-  sessions.set(sessionId, session);
-
+// Free endpoint - get current product catalog
+app.get("/api/product-catalog", (c) => {
   return c.json({
-    success: true,
-    sessionId,
-    message: "24-hour access granted!",
-    session: {
-      id: sessionId,
-      type: "24hour",
-      createdAt: now.toISOString(),
-      expiresAt: expiresAt.toISOString(),
-      validFor: "24 hours",
-    },
-  });
-});
-
-// Paid endpoint - one-time access/payment ($0.10)
-app.post("/api/pay/onetime", async (c) => {
-  const sessionId = uuidv4();
-  const now = new Date();
-  
-  const session: Session = {
-    id: sessionId,
-    createdAt: now,
-    expiresAt: new Date(now.getTime() + 5 * 60 * 1000), // 5 minutes to use
-    type: "onetime",
-    used: false,
-  };
-
-  sessions.set(sessionId, session);
-
-  return c.json({
-    success: true,
-    sessionId,
-    message: "One-time access granted!",
-    access: {
-      id: sessionId,
-      type: "onetime",
-      createdAt: now.toISOString(),
-      validFor: "5 minutes (single use)",
-    },
+    catalog: currentProductCatalog,
   });
 });
 
@@ -168,6 +125,7 @@ app.get("/api/session/:sessionId", (c) => {
       error: isExpired ? "Session expired" : "One-time access already used",
       session: {
         id: session.id,
+        productId: session.productId,
         type: session.type,
         createdAt: session.createdAt.toISOString(),
         expiresAt: session.expiresAt.toISOString(),
@@ -186,6 +144,7 @@ app.get("/api/session/:sessionId", (c) => {
     valid: true,
     session: {
       id: session.id,
+      productId: session.productId,
       type: session.type,
       createdAt: session.createdAt.toISOString(),
       expiresAt: session.expiresAt.toISOString(),
@@ -204,6 +163,7 @@ app.get("/api/sessions", (c) => {
     })
     .map(session => ({
       id: session.id,
+      productId: session.productId,
       type: session.type,
       createdAt: session.createdAt.toISOString(),
       expiresAt: session.expiresAt.toISOString(),
@@ -212,6 +172,77 @@ app.get("/api/sessions", (c) => {
   return c.json({ sessions: activeSessions });
 });
 
+// Dynamic payment endpoint - handles any product from catalog
+app.post("/api/pay/:productId", async (c) => {
+  const productId = c.req.param("productId");
+  const product = currentProductCatalog.products.find(p => p.id === productId);
+
+  if (!product) {
+    return c.json({ error: "Product not found" }, 404);
+  }
+
+  const sessionId = uuidv4();
+  const now = new Date();
+  
+  let expiresAt: Date;
+  if (product.type === "session") {
+    expiresAt = new Date(now.getTime() + (product.duration || 60) * 60 * 1000); // Convert minutes to milliseconds
+  } else {
+    expiresAt = new Date(now.getTime() + 5 * 60 * 1000); // 5 minutes for one-time
+  }
+
+  const session: Session = {
+    id: sessionId,
+    productId: product.id,
+    createdAt: now,
+    expiresAt,
+    type: product.type,
+    used: product.type === "onetime" ? false : undefined,
+  };
+
+  sessions.set(sessionId, session);
+
+  return c.json({
+    success: true,
+    sessionId,
+    message: `${product.name} access granted!`,
+    session: {
+      id: sessionId,
+      productId: product.id,
+      productName: product.name,
+      type: product.type,
+      createdAt: now.toISOString(),
+      expiresAt: expiresAt.toISOString(),
+      validFor: product.type === "session" 
+        ? `${product.duration} minutes` 
+        : "5 minutes (single use)",
+    },
+  });
+});
+
+// Configure x402 payment middleware dynamically based on product catalog
+function updatePaymentMiddleware() {
+  const paymentRoutes: Record<string, { price: string; network: Network }> = {};
+  
+  currentProductCatalog.products.forEach(product => {
+    paymentRoutes[`/api/pay/${product.id}`] = {
+      price: product.price,
+      network,
+    };
+  });
+
+  return paymentMiddleware(
+    payTo,
+    paymentRoutes,
+    {
+      url: facilitatorUrl,
+    },
+  );
+}
+
+// Apply initial payment middleware
+app.use(updatePaymentMiddleware());
+
 console.log(`
 🚀 x402 Payment Template Server
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -219,9 +250,9 @@ console.log(`
 🔗 Network: ${network}
 🌐 Port: ${port}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 Payment Options:
-   - 24-Hour Session: $1.00
-   - One-Time Access: $0.10
+📋 Configurable Product Catalog
+   - Set products via POST /api/product-catalog
+   - Pay for products via POST /api/pay/:productId
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🛠️  This is a template! Customize it for your app.
 📚 Learn more: https://x402.org

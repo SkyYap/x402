@@ -213,7 +213,7 @@ export const mockPaymentLinks: PaymentLink[] = [
     description: 'Monthly premium subscription',
     amount: 29.99,
     currency: 'USD',
-    url: 'https://pay.merchant.com/premium-monthly',
+    url: 'https://pay.merchant.com/session',
     isActive: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),

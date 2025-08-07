@@ -1,8 +1,7 @@
 {
   "name": "x402-server-example",
   "version": "1.0.0",
-  "description": "x402 Payment Template Server",
-  "main": "index.ts",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch index.ts",
     "build": "tsc",
@@ -13,8 +12,7 @@
     "@hono/node-server": "^1.14.0",
     "x402-hono": "^0.4.0",
     "dotenv": "^16.5.0",
-    "uuid": "^11.0.6",
-    "@supabase/supabase-js": "^2.39.0"
+    "uuid": "^11.0.6"
   },
   "devDependencies": {
     "@types/node": "^22.15.3",

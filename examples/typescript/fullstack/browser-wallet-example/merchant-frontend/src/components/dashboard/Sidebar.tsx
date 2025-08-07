@@ -12,10 +12,36 @@ import {
   BarChart3,
   Monitor,
   Receipt,
-  Bitcoin
+  Bitcoin,
+  ChevronDown,
+  Settings,
+  LogOut,
+  Plus,
+  Building2,
+  Users2,
+  Info,
+  ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import type { NavigationItem } from '@/types';
 
 const navigation: NavigationItem[] = [
@@ -24,9 +50,9 @@ const navigation: NavigationItem[] = [
   { name: 'Transactions', href: '/transactions', icon: CreditCard },
   { name: 'Customers', href: '/customers', icon: Users },
   { name: 'Products', href: '/products', icon: Package },
-  { name: 'Radar', href: '/radar', icon: Shield },
   { name: 'Payment Links', href: '/payment-links', icon: Link },
-  { name: 'Analytics', href: '/reporting', icon: BarChart3 },
+  { name: 'Radar', href: '/radar', icon: Shield, comingSoon: true },
+  { name: 'Analytics', href: '/reporting', icon: BarChart3, comingSoon: true },
   { name: 'Terminal', href: '/terminal', icon: Monitor, comingSoon: true },
   { name: 'Billing', href: '/billing', icon: Receipt, comingSoon: true },
 ];
@@ -77,14 +103,14 @@ export function Sidebar({ className }: SidebarProps) {
               >
                 <Icon className="mr-3 h-4 w-4 flex-shrink-0" />
                 {!isCollapsed && (
-                  <>
-                    <span className="flex-1">{item.name}</span>
+                  <div className="flex items-center justify-between w-full min-w-0">
+                    <span className="truncate">{item.name}</span>
                     {item.comingSoon && (
-                      <Badge variant="secondary" className="ml-auto text-xs">
+                      <Badge variant="secondary" className="ml-2 flex-shrink-0 text-xs">
                         Soon
                       </Badge>
                     )}
-                  </>
+                  </div>
                 )}
               </NavLink>
             );
@@ -94,17 +120,153 @@ export function Sidebar({ className }: SidebarProps) {
 
       {/* Footer */}
       <div className="border-t p-4">
-        <div className="flex items-center space-x-3">
-          <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center">
-            <span className="text-sm font-medium text-primary-foreground">M</span>
-          </div>
-          {!isCollapsed && (
-            <div className="flex-1">
-              <p className="text-sm font-medium">Merchant</p>
-              <p className="text-xs text-muted-foreground">merchant@example.com</p>
-            </div>
-          )}
-        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="w-full justify-start p-2 h-auto bg-white hover:bg-gray-100 text-gray-900">
+              <div className="flex items-center space-x-3 w-full">
+                <Avatar className="h-8 w-8 flex-shrink-0">
+                  <AvatarImage src="/avatars/01.png" alt="@cryptopay" />
+                  <AvatarFallback>CP</AvatarFallback>
+                </Avatar>
+                {!isCollapsed && (
+                  <>
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-sm font-medium truncate">CryptoPay</p>
+                    </div>
+                    <ChevronDown className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                  </>
+                )}
+              </div>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-64" align="start" forceMount>
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex items-center space-x-2">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src="/avatars/01.png" alt="@cryptopay" />
+                  <AvatarFallback>CP</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium leading-none">CryptoPay</p>
+                </div>
+              </div>
+            </DropdownMenuLabel>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem>
+              <Settings className="mr-2 h-4 w-4" />
+              <span>Settings</span>
+            </DropdownMenuItem>
+            
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <div className="flex items-center w-full">
+                  <div className="mr-2 h-4 w-4 rounded bg-orange-100 flex items-center justify-center">
+                    <span className="text-xs text-orange-600">S</span>
+                  </div>
+                  <span className="flex-1">Switch to sandbox</span>
+                </div>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-48">
+                <DropdownMenuItem>
+                  <Plus className="mr-2 h-4 w-4" />
+                  <span>Create sandbox</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <div className="mr-2 h-4 w-4 rounded bg-orange-100 flex items-center justify-center">
+                    <span className="text-xs text-orange-600">S</span>
+                  </div>
+                  <span>Manage sandboxes</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <div className="mr-2 h-4 w-4 rounded bg-blue-100 flex items-center justify-center">
+                    <span className="text-xs text-blue-600">T</span>
+                  </div>
+                  <span>Test mode</span>
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+              Accounts
+            </DropdownMenuLabel>
+            
+            <DropdownMenuItem>
+              <div className="flex items-center w-full">
+                <div className="mr-2 h-4 w-4 rounded-full bg-blue-100 flex items-center justify-center">
+                  <span className="text-xs text-blue-600">C</span>
+                </div>
+                <span className="flex-1">CryptoPay</span>
+              </div>
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem>
+              <div className="flex items-center w-full">
+                <div className="mr-2 h-4 w-4 rounded-full bg-green-100 flex items-center justify-center">
+                  <span className="text-xs text-green-600">D</span>
+                </div>
+                <span className="flex-1">Demo Account</span>
+              </div>
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem>
+              <div className="flex items-center w-full">
+                <div className="mr-2 h-4 w-4 rounded-full bg-purple-100 flex items-center justify-center">
+                  <span className="text-xs text-purple-600">T</span>
+                </div>
+                <span className="flex-1">Test Account</span>
+              </div>
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>
+                <Plus className="mr-2 h-4 w-4" />
+                <span>Create</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuSubContent className="w-48">
+                <DropdownMenuItem>
+                  <Building2 className="mr-2 h-4 w-4" />
+                  <span>Create account</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  <Users2 className="mr-2 h-4 w-4" />
+                  <span>Create organization</span>
+                </DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+            
+            <DropdownMenuSeparator />
+            
+            <DropdownMenuItem>
+              <div className="flex items-center w-full">
+                <div className="mr-2 h-4 w-4 rounded-full bg-gray-100 flex items-center justify-center">
+                  <span className="text-xs text-gray-600">S</span>
+                </div>
+                <span className="flex-1">Sky Yap</span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Roles: Admin and Super Admin</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </DropdownMenuItem>
+            
+            <DropdownMenuItem>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Sign out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

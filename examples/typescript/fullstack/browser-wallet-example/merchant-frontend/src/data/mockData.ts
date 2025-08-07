@@ -216,6 +216,7 @@ export const mockPaymentLinks: PaymentLink[] = [
     url: 'https://pay.merchant.com/premium-monthly',
     isActive: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
     totalPaid: 899.70,
     clickCount: 156
   },
@@ -228,7 +229,6 @@ export const mockPaymentLinks: PaymentLink[] = [
     url: 'https://pay.merchant.com/digital-bundle',
     isActive: true,
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
-    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
     totalPaid: 1999.90,
     clickCount: 89
   },

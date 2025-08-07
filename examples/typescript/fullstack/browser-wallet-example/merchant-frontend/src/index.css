@@ -28,16 +28,15 @@ a:hover {
 
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
+  padding: 0;
   min-width: 320px;
   min-height: 100vh;
 }
 
-h1 {
+/* h1 {
   font-size: 3.2em;
   line-height: 1.1;
-}
+} */
 
 button {
   border-radius: 8px;
@@ -133,5 +132,60 @@ button:focus-visible {
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Ensure no gaps in layout */
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+  }
+  
+  #root {
+    height: 100%;
+  }
+  
+  /* Override conflicting checkbox styles */
+  input[type="checkbox"] {
+    background-color: transparent !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 4px !important;
+    width: 16px !important;
+    height: 16px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    cursor: pointer !important;
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+  }
+  
+  input[type="checkbox"]:checked {
+    background-color: #ea580c !important;
+    border-color: #ea580c !important;
+  }
+  
+  input[type="checkbox"]:checked::after {
+    content: '✓' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: white !important;
+    font-size: 12px !important;
+    font-weight: bold !important;
+  }
+  
+  /* Ensure table checkbox alignment */
+  th input[type="checkbox"],
+  td input[type="checkbox"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    float: none !important;
   }
 }

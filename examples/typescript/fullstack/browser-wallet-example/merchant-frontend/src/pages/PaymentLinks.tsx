@@ -23,16 +23,21 @@ export function PaymentLinks() {
   const [selectedLink, setSelectedLink] = useState(mockPaymentLinks[0]);
   const [newLinkData, setNewLinkData] = useState({
     name: '',
-    description: '',
+    product: '',
     amount: '',
     currency: 'USD',
     hasExpiry: false,
     expiryDate: ''
   });
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // In a real app, you'd show a toast notification here
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      // In a real app, you'd show a toast notification here
+      console.log('Copied to clipboard:', text);
+    } catch (err) {
+      console.error('Failed to copy to clipboard:', err);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -40,13 +45,21 @@ export function PaymentLinks() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Payment Links</h1>
-        <p className="text-gray-600 mt-2">
-          Create and manage payment links for easy crypto transactions.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 text-left">Payment Links</h1>
+          <p className="text-gray-600 mt-2">
+            Create and manage payment links for easy crypto transactions.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" className="border-gray-300">
+            <BarChart3 className="h-4 w-4 mr-2" />
+            Analyze
+          </Button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -61,69 +74,71 @@ export function PaymentLinks() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="link-name">Link Name</Label>
+              <div className="text-left">
+                <Label htmlFor="link-name" className="text-left">Link Name</Label>
                 <Input
                   id="link-name"
                   value={newLinkData.name}
                   onChange={(e) => setNewLinkData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="e.g., Premium Subscription"
-                  className="border-amber-200 focus:border-amber-400"
+                  className="border-amber-200 focus:border-amber-400 text-left"
                 />
               </div>
               
-              <div>
-                <Label htmlFor="link-description">Description</Label>
+              <div className="text-left">
+                <Label htmlFor="link-product" className="text-left">Product</Label>
                 <Textarea
-                  id="link-description"
-                  value={newLinkData.description}
-                  onChange={(e) => setNewLinkData(prev => ({ ...prev, description: e.target.value }))}
-                  placeholder="Brief description of the payment"
-                  className="border-amber-200 focus:border-amber-400"
+                  id="link-product"
+                  value={newLinkData.product}
+                  onChange={(e) => setNewLinkData(prev => ({ ...prev, product: e.target.value }))}
+                  placeholder="Brief description of the product"
+                  className="border-amber-200 focus:border-amber-400 text-left"
                 />
               </div>
               
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="link-amount">Amount</Label>
+                <div className="text-left">
+                  <Label htmlFor="link-amount" className="text-left">Amount</Label>
                   <Input
                     id="link-amount"
                     type="number"
                     value={newLinkData.amount}
                     onChange={(e) => setNewLinkData(prev => ({ ...prev, amount: e.target.value }))}
                     placeholder="0.00"
-                    className="border-amber-200 focus:border-amber-400"
+                    className="border-amber-200 focus:border-amber-400 text-left"
                   />
                 </div>
-                <div>
-                  <Label htmlFor="link-currency">Currency</Label>
+                <div className="text-left">
+                  <Label htmlFor="link-currency" className="text-left">Currency</Label>
                   <Input
                     id="link-currency"
                     value={newLinkData.currency}
                     readOnly
-                    className="border-amber-200 bg-gray-50"
+                    className="border-amber-200 bg-gray-50 text-left"
                   />
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
-                <Switch
+              <div className="flex items-center space-x-2 text-left">
+                <input 
+                  type="checkbox" 
                   id="has-expiry"
+                  className="rounded border-gray-400 text-orange-600 checked:bg-orange-600 checked:border-orange-600 focus:ring-orange-500 focus:ring-2 focus:ring-offset-2" 
                   checked={newLinkData.hasExpiry}
-                  onCheckedChange={(checked) => setNewLinkData(prev => ({ ...prev, hasExpiry: checked }))}
+                  onChange={(e) => setNewLinkData(prev => ({ ...prev, hasExpiry: e.target.checked }))}
                 />
-                <Label htmlFor="has-expiry">Set expiration date</Label>
+                <Label htmlFor="has-expiry" className="text-left">Set expiration date</Label>
               </div>
               
               {newLinkData.hasExpiry && (
-                <div>
-                  <Label htmlFor="expiry-date">Expiry Date</Label>
+                <div className="text-left">
+                  <Label htmlFor="expiry-date" className="text-left">Expiry Date</Label>
                   <Input
                     id="expiry-date"
                     type="date"
                     value={newLinkData.expiryDate}
                     onChange={(e) => setNewLinkData(prev => ({ ...prev, expiryDate: e.target.value }))}
-                    className="border-amber-200 focus:border-amber-400"
+                    className="border-amber-200 focus:border-amber-400 text-left"
                   />
                 </div>
               )}
@@ -137,7 +152,10 @@ export function PaymentLinks() {
           {/* Existing Links */}
           <Card className="border-amber-100 bg-gradient-to-br from-white to-amber-50/30">
             <CardHeader>
-              <CardTitle>Your Payment Links</CardTitle>
+              <CardTitle className="flex items-center text-left">
+                <CreditCard className="h-5 w-5 mr-2 text-amber-600" />
+                Your Payment Links
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -151,24 +169,30 @@ export function PaymentLinks() {
                     }`}
                     onClick={() => setSelectedLink(link)}
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h4 className="font-medium text-gray-900">{link.name}</h4>
-                        <p className="text-sm text-gray-600">${link.amount}</p>
-                      </div>
+                                         <div className="flex items-center justify-between">
+                       <div className="text-left">
+                         <h4 className="font-medium text-gray-900 text-left">{link.name}</h4>
+                         <p className="text-sm text-gray-600 text-left">${link.amount}</p>
+                       </div>
                       <div className="flex items-center space-x-2">
-                        <Badge variant={link.isActive ? "default" : "secondary"}>
+                        <Badge 
+                          className={link.isActive 
+                            ? "bg-white text-orange-700 border hover:bg-orange-50 border-orange-200" 
+                            : "bg-white text-gray-600 border hover:bg-gray-50 border-gray-200"
+                          }
+                        >
                           {link.isActive ? 'Active' : 'Inactive'}
                         </Badge>
                         <Button
                           variant="ghost"
                           size="sm"
+                          className="bg-white border border-gray-200 hover:bg-gray-50"
                           onClick={(e) => {
                             e.stopPropagation();
                             copyToClipboard(link.url);
                           }}
                         >
-                          <Copy className="h-3 w-3" />
+                          <Copy className="h-3 w-3 text-gray-600" />
                         </Button>
                       </div>
                     </div>
@@ -245,7 +269,7 @@ export function PaymentLinks() {
                     <p className="text-2xl font-bold text-gray-900">
                       ${selectedLink.totalPaid}
                     </p>
-                    <p className="text-sm text-gray-600">Total Paid</p>
+                    <p className="text-sm text-gray-600">Total Received</p>
                   </div>
                   <div className="text-center p-4 bg-white rounded-lg">
                     <div className="flex items-center justify-center mb-2">
@@ -288,16 +312,18 @@ export function PaymentLinks() {
                       <Button
                         variant="ghost"
                         size="sm"
+                        className="bg-white border border-gray-200 hover:bg-gray-50"
                         onClick={() => copyToClipboard(selectedLink.url)}
                       >
-                        <Copy className="h-3 w-3" />
+                        <Copy className="h-3 w-3 text-gray-600" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => window.open(selectedLink.url, '_blank')}
+                        className="bg-white border border-gray-200 hover:bg-gray-50"
+                        onClick={() => window.open('http://localhost:5173/cryptoPayUI', '_blank')}
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-3 w-3 text-gray-600" />
                       </Button>
                     </div>
                   </div>

@@ -183,7 +183,7 @@ function getChainFromNetwork(network: string | undefined): Chain {
       return avalancheFuji;
     case "core":
       return coreDao;
-    case "core-testnet":
+    case "core-testnet2":
       return coreTestnet2;
     case "scroll":
       return scroll;

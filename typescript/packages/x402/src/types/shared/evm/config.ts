@@ -25,6 +25,10 @@ export const config: Record<string, ChainConfig> = {
     usdcAddress: "0x06efdbff2a14a7c8e15944d1f4a48f9f95f663a4",
     usdcName: "Bridged USDC",
   },
+  "1114": {
+    usdcAddress: "0xb1933d0330f117e137cd00852a3c8e6f7254c566",
+    usdcName: "USDC Testnet Token",
+  },
 };
 
 export type ChainConfig = {

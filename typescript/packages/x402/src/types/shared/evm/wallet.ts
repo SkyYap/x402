@@ -10,7 +10,7 @@ import type {
   PublicClient,
   LocalAccount,
 } from "viem";
-import { baseSepolia, avalancheFuji, base, scroll } from "viem/chains";
+import { baseSepolia, avalancheFuji, base, scroll, coreDao, coreTestnet2 } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { Hex } from "viem";
 
@@ -181,6 +181,10 @@ function getChainFromNetwork(network: string | undefined): Chain {
       return baseSepolia;
     case "avalanche-fuji":
       return avalancheFuji;
+    case "core":
+      return coreDao;
+    case "core-testnet":
+      return coreTestnet2;
     case "scroll":
       return scroll;
     default:
